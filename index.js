@@ -239,5 +239,9 @@ app.get('/consent/fromDate/:fromDate/toDate/:toDate/pan/:pan', (req, res) => {
 })
 
 
+app.get('/uint256', (req, res) => {
+   res.send(183);
+})
+
 
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
