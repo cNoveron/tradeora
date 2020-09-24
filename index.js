@@ -222,20 +222,31 @@ Consignor printed party: Test Consignor Printed Party1 STREET ADDRESS City, 0303
 
 
 */
-
 app.get('/fetchIncomeTaxReturns/fromDate/:fromDate/toDate/:toDate/pan/:pan', (req, res) => {
 
-    console.log('fetching IncomeTax Returns .. Simple reference implementation based on the ITR3 spec');
-    console.log(req.body);
-    console.log(res.body);
+   console.log('fetching IncomeTax Returns .. Simple reference implementation based on the ITR3 spec');
+   console.log(req.body);
+   console.log(res.body);
 
-    res.send(itr3);
+   res.send(itr3);
 
 })
 
+app.get('risk', (req, res) => {
 
-app.get('/consent/fromDate/:fromDate/toDate/:toDate/pan/:pan', (req, res) => {
-    res.send(itr3);
+   var risk = 100
+
+   const lastYearAudited = itr3.AssessmentYear
+   risk = lastYearAudited ? risk - 30 : risk - 10;
+
+   const loanAmount = req.query.loanAmount
+   const grossSales = itr3.SummaryFinancials.ProfitAndLoss.GrossSales
+   const grossSalesToLoanAmount_ratio = grossSales / loanAmount
+   const ratioIsGreaterThan4 = grossSalesToLoanAmount_ratio > 4
+
+
+   res.send();
+
 })
 
 
