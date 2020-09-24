@@ -237,15 +237,15 @@ app.get('risk', (req, res) => {
    var risk = 100
 
    const lastYearAudited = itr3.AssessmentYear
-   risk = lastYearAudited ? risk - 30 : risk - 10;
+   risk = lastYearAudited ? risk - 10 : risk;
 
    const loanAmount = req.query.loanAmount
    const grossSales = itr3.SummaryFinancials.ProfitAndLoss.GrossSales
    const grossSalesToLoanAmount_ratio = grossSales / loanAmount
    const ratioIsGreaterThan4 = grossSalesToLoanAmount_ratio > 4
+   risk = ratioIsGreaterThan4 ? risk - 30 : risk - 10;
 
-
-   res.send();
+   res.send({ risk });
 
 })
 
