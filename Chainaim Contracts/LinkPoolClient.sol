@@ -1,8 +1,14 @@
+/** This example code is designed to quickly deploy an example contract using Remix.
+ *  If you have never used Remix, try our example walkthrough: https://docs.chain.link/docs/example-walkthrough
+ *  You will need testnet ETH and LINK.
+ *     - Ropsten ETH faucet: https://faucet.ropsten.be/
+ *     - Ropsten LINK faucet: https://ropsten.chain.link/
+ */
+ 
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.6/ChainlinkClient.sol";
-
 
 contract LinkPoolClient is ChainlinkClient {
     address private oracle;
@@ -10,7 +16,8 @@ contract LinkPoolClient is ChainlinkClient {
     uint256 private fee;
     
     string public API_URL;
-    mapping(bytes32 => uint256) public riskScore_from;
+    //mapping(bytes32 => uint256) public riskScore_from;
+    uint256 public riskScore;
     
     /**
      * Network: Kovan
@@ -24,12 +31,15 @@ contract LinkPoolClient is ChainlinkClient {
      *      ID:             b6602d14e4734c49a5e1ce19d45a4632
      *      Fee:            0.1 LINK
      */
-    constructor(string memory URL) 
-    public {
-        setPublicChainlinkToken();
+    constructor() public {
+    	setPublicChainlinkToken();
     	oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455; // oracle address
     	jobId = "b6602d14e4734c49a5e1ce19d45a4632"; //job id
     	fee = 0.1 * 10 ** 18; // 0.1 LINK
+    }
+    
+    function setAPI_URL(string memory URL) 
+    public {
     	API_URL = URL;
     }
     
@@ -40,16 +50,18 @@ contract LinkPoolClient is ChainlinkClient {
     	    address(this), 
     	    this.fulfill.selector
     	);
-    	string memory URI = appendEndpoint("financial");
+    	string memory URI = appendEndpoint("financials");
     	URI = appendFirstPram(URI, "PAN", tradeID);
     	URI = appendPrams(URI, "loanAmount", loanAmount);
     	req.add("get", URI);
+    	req.add("path", "riskReduction");
     	sendChainlinkRequestTo(oracle, req, fee);
     }
     
-    function fulfill(bytes32 _requestId, uint256 response) 
+    function fulfill(bytes32 _requestId, uint256 response)
     public {
-            riskScore_from[_requestId] = response;
+        // riskScore_from[_requestId] = response;
+        riskScore = response;
     }
     
     function appendEndpoint(string memory endpoint) private view returns (string memory) {
@@ -65,5 +77,11 @@ contract LinkPoolClient is ChainlinkClient {
     private pure returns (string memory) {
         return string(abi.encodePacked(URL_withFirstPram,"&",paramKey,"=",paramVal));
     }
+    
+    function appendFunctionsWork( string memory tradeID, string memory loanAmount)
+    public view returns (string memory URI) {
+    	URI = appendEndpoint("financial");
+    	URI = appendFirstPram(URI, "PAN", tradeID);
+    	URI = appendPrams(URI, "loanAmount", loanAmount);
+    }
 }
-
