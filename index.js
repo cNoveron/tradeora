@@ -100,7 +100,7 @@ const itr3 = {
     }
  };
 
-let billOfLading = {
+const billOfLading = {
     "isValid": true,
 	"negotiable": false,
 	"billOfLadingNumber": "TestBoL1002CFS",
@@ -128,98 +128,41 @@ let billOfLading = {
 			"freightedAtAd": false
 		}
 	}]
-};
+}
+
+const maritimeRoutes = {
+   Mumbai: {
+      Singapore: 10,
+      SanFrancisco: 40,
+      Manzanillo: 46,
+      Antofagasta: 50,
+      CapeTown: 19
+   }
+}
+
+const percentOfVoyage = {
+   ACMEN12345: 0.56,
+   EPICROYAL: 0.23,
+   HMSVICTORIAIV: 0.17
+}
 
 app.post('/verify/billOfLading', (req, res) => {
 
-  console.log('processing BL verification.. Reference implementation based on the TRADELENS developer portal references ');
+   console.log('processing BL verification.. Reference implementation based on the TRADELENS developer portal references ');
 
-    console.log(req.body);
-    billOfLading.billOfLadingNumber = req.body.billOfLadingNumber;
-    billOfLading.oceanCarrierCode = req.body.oceanCarrierCode;
-    billOfLading.consignor.printedParty = req.body.consignorPrintedParty;
-    res.send(billOfLading);
-
-})
-
-
-app.get('/', function (req, res) {
-  res.render('index', {});
-})
-
-
-app.get('/hello', (req, res) => {
-    console.log(req.body);
-
-    res.send('hello from server');
+   console.log(req.body);
+   billOfLading.billOfLadingNumber = req.body.billOfLadingNumber;
+   billOfLading.oceanCarrierCode = req.body.oceanCarrierCode;
+   billOfLading.consignor.printedParty = req.body.consignorPrintedParty;
+   res.send(billOfLading);
 
 })
-
-app.post('/monthlyAvgGSTInTier', (req, res) => {
-    console.log(req.body);
-
-    const avg=30300;
-    const queryTiers = req.body.queryTiers;
-    const response = {
-      "name":"",
-      "result":"0"
-     }
-
-
-    for (var i = 0; i < queryTiers.length; i++) {
-
-      if(queryTiers[i].operator == "LESSTHAN"){
-          if(avg <= +queryTiers[i].value){
-            response.name=queryTiers[i].name;
-            response.result="1";
-            break;
-          }
-
-      }
-
-      if(queryTiers[i].operator == "GREATERTHAN"){
-          if(avg > +queryTiers[i].value){
-            response.name=queryTiers[i].name;
-            response.result="1";
-            break;
-          }
-
-      }
-
-         if(queryTiers[i].operator ==  "BETWEEN"){
-           const limit = queryTiers[i].value.split("-");
-
-           console.log(limit , avg ,  avg > parseInt(limit[0]) , avg < parseInt(limit[1])  );
-
-           if( avg > parseInt(limit[0])  && avg < parseInt(limit[1]) ){
-
-             console.log(" inner ", limit);
-             response.name=queryTiers[i].name;
-             response.result="1";
-             break;
-           }
-         }
-
-      }
-
-    res.send(response);
-})
-
-/*
-app.get('/fetchIncomeTaxReturns', (req, res) => {
-    console.log(req.body);
-
-    res.send(itr3);
-
-})
-*/
 
 /*
 
 Bill of Lading number: TestBoL1002CFS
 Ocean carrier code (SCAC code): TSTC
 Consignor printed party: Test Consignor Printed Party1 STREET ADDRESS City, 03039, Country
-
 
 */
 app.get('/fetchIncomeTaxReturns/fromDate/:fromDate/toDate/:toDate/pan/:pan', (req, res) => {
@@ -232,26 +175,51 @@ app.get('/fetchIncomeTaxReturns/fromDate/:fromDate/toDate/:toDate/pan/:pan', (re
 
 })
 
-app.get('risk', (req, res) => {
+app.get('/financials', (req, res) => {
 
-   var risk = 100
+   var riskReduction = 0
 
    const lastYearAudited = itr3.AssessmentYear
-   risk = lastYearAudited ? risk - 10 : risk;
+   const lastYearAuditedIsPreviousYear = lastYearAudited === "2019"
 
-   const loanAmount = req.query.loanAmount
-   const grossSales = itr3.SummaryFinancials.ProfitAndLoss.GrossSales
-   const grossSalesToLoanAmount_ratio = grossSales / loanAmount
-   const ratioIsGreaterThan4 = grossSalesToLoanAmount_ratio > 4
-   risk = ratioIsGreaterThan4 ? risk - 30 : risk - 10;
+   if (lastYearAuditedIsPreviousYear){
+      const loanAmount = parseInt(req.query.loanAmount)
+      const grossSales = parseInt(itr3.SummaryFinancials.ProfitAndLoss.GrossSales)
+      const grossSalesToLoanAmount_ratio = grossSales / loanAmount
+      const ratioIsGreaterThan4 = grossSalesToLoanAmount_ratio > 4
+      riskReduction = ratioIsGreaterThan4 ? 30 : 10
+   }
 
-   res.send({ risk });
-
+   res.send({ riskReduction });
 })
 
+app.post('/billOfLading', (req, res) => {
 
-app.get('/uint256', (req, res) => {
-   res.send({"uint256":183});
+   var riskReduction = 0
+
+   billOfLading.billOfLadingNumber = req.body.billOfLadingNumber;
+   billOfLading.oceanCarrierCode = req.body.oceanCarrierCode;
+   billOfLading.consignor.printedParty = req.body.consignorPrintedParty;
+   riskReduction = billOfLading ? 20 : 0
+      
+   res.send({ riskReduction });
+})
+
+app.get('/vessel', (req, res) => {
+
+   var riskReduction = 0
+
+   const { portOfOrigin, portOfDestination } = req.query
+   console.log({ portOfOrigin, portOfDestination })
+   const voyageDuration = maritimeRoutes[portOfOrigin][portOfDestination]
+   const loanDuration = req.query.loanDuration
+   const loanPeriodShorterThanVoyage = loanDuration < voyageDuration
+   riskReduction = loanPeriodShorterThanVoyage ? 10 : 0
+
+   const isPastHalfVoyage = percentOfVoyage > 0.5
+   riskReduction = isPastHalfVoyage ? riskReduction + 10 : riskReduction 
+
+   res.send({ riskReduction, voyageDuration });
 })
 
 
