@@ -199,14 +199,13 @@ app.post('/billOfLading', (req, res) => {
 app.get('/vessel', (req, res) => {
 
    var riskReduction = 0
-
-   const { portOfOrigin, portOfDestination, loanDuration, vesselID} = req.query
+   const { portOfOrigin, portOfDestination, loanDuration, PAM} = req.query
 
    const voyageDuration = maritimeRoutes[portOfOrigin][portOfDestination]
    const loanPeriodShorterThanVoyage = loanDuration < voyageDuration
    riskReduction = loanPeriodShorterThanVoyage ? 10 : 0
 
-   const isPastHalfVoyage = voyagePercentageCompleted[vesselID] > 0.5
+   const isPastHalfVoyage = voyagePercentageCompleted[PAM] > 0.5
    riskReduction = isPastHalfVoyage ? riskReduction + 10 : riskReduction 
 
    console.log({ portOfOrigin, portOfDestination, voyageDuration })
