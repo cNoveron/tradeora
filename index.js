@@ -140,7 +140,7 @@ const maritimeRoutes = {
    }
 }
 
-const percentOfVoyage = {
+const voyagePercentageCompleted = {
    ACMEN12345: 0.56,
    EPICROYAL: 0.23,
    HMSVICTORIAIV: 0.17
@@ -200,19 +200,19 @@ app.get('/vessel', (req, res) => {
 
    var riskReduction = 0
 
-   const { portOfOrigin, portOfDestination } = req.query
+   const { portOfOrigin, portOfDestination, loanDuration, vesselID} = req.query
+
    const voyageDuration = maritimeRoutes[portOfOrigin][portOfDestination]
-   const loanDuration = req.query.loanDuration
    const loanPeriodShorterThanVoyage = loanDuration < voyageDuration
    riskReduction = loanPeriodShorterThanVoyage ? 10 : 0
 
-   const isPastHalfVoyage = percentOfVoyage > 0.5
+   const isPastHalfVoyage = voyagePercentageCompleted[vesselID] > 0.5
    riskReduction = isPastHalfVoyage ? riskReduction + 10 : riskReduction 
 
    console.log({ portOfOrigin, portOfDestination, voyageDuration })
    console.log({ loanDuration, loanPeriodShorterThanVoyage })
    console.log({ isPastHalfVoyage })
-   
+
    res.send({ riskReduction });
 })
 
