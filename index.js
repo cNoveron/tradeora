@@ -165,15 +165,6 @@ Ocean carrier code (SCAC code): TSTC
 Consignor printed party: Test Consignor Printed Party1 STREET ADDRESS City, 03039, Country
 
 */
-app.get('/fetchIncomeTaxReturns/fromDate/:fromDate/toDate/:toDate/pan/:pan', (req, res) => {
-
-   console.log('fetching IncomeTax Returns .. Simple reference implementation based on the ITR3 spec');
-   console.log(req.body);
-   console.log(res.body);
-
-   res.send(itr3);
-
-})
 
 app.get('/financials', (req, res) => {
 
@@ -210,7 +201,6 @@ app.get('/vessel', (req, res) => {
    var riskReduction = 0
 
    const { portOfOrigin, portOfDestination } = req.query
-   console.log({ portOfOrigin, portOfDestination })
    const voyageDuration = maritimeRoutes[portOfOrigin][portOfDestination]
    const loanDuration = req.query.loanDuration
    const loanPeriodShorterThanVoyage = loanDuration < voyageDuration
@@ -219,7 +209,11 @@ app.get('/vessel', (req, res) => {
    const isPastHalfVoyage = percentOfVoyage > 0.5
    riskReduction = isPastHalfVoyage ? riskReduction + 10 : riskReduction 
 
-   res.send({ riskReduction, voyageDuration });
+   console.log({ portOfOrigin, portOfDestination, voyageDuration })
+   console.log({ loanDuration, loanPeriodShorterThanVoyage })
+   console.log({ isPastHalfVoyage })
+   
+   res.send({ riskReduction });
 })
 
 
