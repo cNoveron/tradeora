@@ -59,7 +59,7 @@ contract Vessels is ChainlinkClient {
     
     function fulfill(bytes32 _requestId, uint256 response)
     public {
-        plainResponse = response;
+        riskReduction = response;
     }
     
     function setAPI_URL(string memory URL) 
