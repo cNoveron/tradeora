@@ -216,7 +216,7 @@ app.get('/vessel', (req, res) => {
 
       let status = parseInt(response.data[0].STATUS)
       console.log(status)
-      riskReduction = status === 0 ? riskReduction + 30 : riskReduction
+      riskReduction = status === 0 ? riskReduction + 10 : riskReduction
 
       res.send({ riskReduction });
    })
