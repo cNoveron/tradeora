@@ -3,10 +3,9 @@ const cors = require('cors');
 const app = express();
 const port = 5000;
 app.use(cors());
-
-
-
 app.use(express.json());
+
+const axios = require('axios').default;
 
 const gstPaid= {
     "GSTTotal": {
@@ -134,14 +133,15 @@ const maritimeRoutes = {
       SanFrancisco: 40,
       Manzanillo: 46,
       Antofagasta: 50,
-      CapeTown: 19
+      CapeTown: 19,
+      NewYork: 87
    }
 }
 
 const voyagePercentageCompleted = {
-   ACMEN12345: 0.56,
-   EPICROYAL: 0.23,
-   HMSVICTORIAIV: 0.17
+   241312000: 0.56,
+   477524100: 0.23,
+   477203100: 0.17
 }
 
 app.post('/verify/billOfLading', (req, res) => {
@@ -197,20 +197,30 @@ app.post('/billOfLading', (req, res) => {
 app.get('/vessel', (req, res) => {
 
    var riskReduction = 0
-   const { portOfOrigin, portOfDestination, loanDuration, PAM} = req.query
+   const { portOfOrigin, portOfDestination, loanDuration, mmsi } = req.query
 
    const voyageDuration = maritimeRoutes[portOfOrigin][portOfDestination]
    const loanPeriodShorterThanVoyage = loanDuration < voyageDuration
    riskReduction = loanPeriodShorterThanVoyage ? 10 : 0
 
-   const isPastHalfVoyage = voyagePercentageCompleted[PAM] > 0.5
+   const isPastHalfVoyage = voyagePercentageCompleted[mmsi] > 0.5
    riskReduction = isPastHalfVoyage ? riskReduction + 10 : riskReduction 
 
    console.log({ portOfOrigin, portOfDestination, voyageDuration })
    console.log({ loanDuration, loanPeriodShorterThanVoyage })
    console.log({ isPastHalfVoyage })
 
-   res.send({ riskReduction });
+   const url = 'https://services.marinetraffic.com/api/exportvessel/v:5/dbd87f37b7890047b923aade1004987a7b0e862c/timespan:2000/protocol:jsono/mmsi:' + mmsi
+
+   axios({ method: 'get', url }).then((response) => {
+
+      let status = parseInt(response.data[0].STATUS)
+      console.log(status)
+      riskReduction = status === 0 ? riskReduction + 30 : riskReduction
+
+      res.send({ riskReduction });
+   })
+   .catch(console.log)
 })
 
 
